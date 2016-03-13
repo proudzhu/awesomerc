@@ -1,0 +1,6 @@
+[submodule "apw"]
+	path = apw
+	url = https://github.com/mokasin/apw.git
+[submodule "lain"]
+	path = lain
+	url = https://github.com/copycat-killer/lain.git
