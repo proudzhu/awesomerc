@@ -611,7 +611,7 @@ run_once.run_once("xrandr --output HDMI1 --auto --right-of eDP1")
 run_once.run_once("/usr/bin/feh --bg-tile /home/proudzhu/Pictures/wallhaven-201629.jpg")
 run_once.run_once("fcitx")
 run_once.run_once("dropbox")
-run_once.run_once("compton --backend glx -b")
+--run_once.run_once("compton --backend glx -b")
 run_once.run_once("udiskie")
 run_once.run_once("redshift")
 -- }}}
