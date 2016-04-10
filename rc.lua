@@ -15,8 +15,6 @@ local hotkeys_popup = require("awful.hotkeys_popup").widget
 local ror = require("aweror")
 -- load run_once' function
 local run_once = require("run_once")
--- load apw widget
-local APW = require("apw/widget")
 -- lain
 local lain = require("lain")
 
@@ -172,6 +170,18 @@ lain.widgets.calendar:attach(mytextclock, {
 
 -- Volume
 volicon = wibox.widget.imagebox(beautiful.widget_vol)
+volumewidget = lain.widgets.pulseaudio({
+    settings = function()
+        if volume_now.muted == "yes" then
+            widget:set_markup(markup("#ff0000", volume_now.left .. "% "))
+        else
+            widget:set_markup(markup("#7493d2", volume_now.left .. "% "))
+        end
+    end,
+	scallback = function()
+		return "pacmd list-sinks | sed -n -e '0,/*/d' -e '/base volume/d' -e '/volume:/p' -e '/muted:/p'"
+	end
+})
 
 -- Net
 netdownicon = wibox.widget.imagebox(beautiful.widget_netdown)
@@ -192,6 +202,19 @@ netupinfo = lain.widgets.net({
 		widget:set_markup(markup("#e54c62", net_now.sent .. " "))
 		netdowninfo:set_markup(markup("#87af5f", net_now.received .. " "))
 	end
+})
+
+-- Battery
+baticon = wibox.widget.imagebox(beautiful.widget_batt)
+batwidget = lain.widgets.bat({
+    settings = function()
+        if bat_now.perc == "N/A" then
+            perc = "AC "
+        else
+            perc = bat_now.perc .. "% "
+        end
+        widget:set_text(perc)
+    end
 })
 
 -- Create a wibox for each screen and add it
@@ -272,9 +295,11 @@ for s in screen do
             netdowninfo,
             netupicon,
             netupinfo,
-            mytextclock,
             volicon,
-            APW,
+            volumewidget,
+            baticon,
+            batwidget,
+            mytextclock,
             mylayoutbox[s],
         },
     }
@@ -385,7 +410,28 @@ globalkeys = awful.util.table.join(
               {description = "lua execute prompt", group = "awesome"}),
     -- Menubar
     awful.key({ modkey }, "p", function() menubar.show() end,
-              {description = "show the menubar", group = "launcher"})
+              {description = "show the menubar", group = "launcher"}),
+
+	-- PulseAudio volume control
+    awful.key({ altkey }, "Up",
+              function ()
+                  os.execute(string.format("pactl set-sink-volume %d +5%%", volumewidget.sink))
+                  volumewidget.update()
+              end),
+    awful.key({ altkey }, "Down",
+              function ()
+                  os.execute(string.format("pactl set-sink-volume %d -5%%", volumewidget.sink))
+                  volumewidget.update()
+              end),
+    awful.key({ altkey }, "m",
+              function ()
+                  if volumewidget.muted == "yes" then
+                      os.execute(string.format("pactl set-sink-mute %d off", volumewidget.sink))
+                  else
+                      os.execute(string.format("pactl set-sink-mute %d on", volumewidget.sink))
+                  end
+                  volumewidget.update()
+              end)
 )
 
 clientkeys = awful.util.table.join(
