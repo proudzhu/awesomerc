@@ -217,6 +217,19 @@ batwidget = lain.widgets.bat({
     end
 })
 
+-- GitHub contribution indicator
+github_contributed = beautiful.widget_github_contributed
+github_not_contributed = beautiful.widget_github_not_contributed
+github_widget = wibox.widget.imagebox()
+function update_github(has_contributions)
+    if has_contributions then
+        github_widget:set_image(github_contributed)
+    else
+        github_widget:set_image(github_not_contributed)
+    end
+end
+update_github(false)
+
 -- Create a wibox for each screen and add it
 mywibox = {}
 mypromptbox = {}
@@ -300,6 +313,7 @@ for s in screen do
             baticon,
             batwidget,
             mytextclock,
+			github_widget,
             mylayoutbox[s],
         },
     }

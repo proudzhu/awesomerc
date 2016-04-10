@@ -120,7 +120,8 @@ theme.widget_mail                   = theme.confdir .. "/icons/mail.png"
 theme.widget_batt                   = theme.confdir .. "/icons/bat.png"
 theme.widget_clock                  = theme.confdir .. "/icons/clock.png"
 theme.widget_vol                    = theme.confdir .. "/icons/spkr.png"
-
+theme.widget_github_contributed     = theme.confdir .. "/icons/github_contributed.png"
+theme.widget_github_not_contributed = theme.confdir .. "/icons/github_not_contributed.png"
 theme.taglist_squares_sel           = theme.confdir .. "/icons/square_a.png"
 theme.taglist_squares_unsel         = theme.confdir .. "/icons/square_b.png"
 -- }}}
