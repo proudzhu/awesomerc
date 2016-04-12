@@ -17,6 +17,8 @@ local ror = require("aweror")
 local run_once = require("run_once")
 -- lain
 local lain = require("lain")
+-- revelation
+local revelation = require("revelation")
 
 -- {{{ Error handling
 -- Check if awesome encountered an error during startup and fell back to
@@ -46,6 +48,9 @@ end
 -- {{{ Variable definitions
 -- Themes define colours, icons, font and wallpapers.
 beautiful.init(awful.util.getdir("config") .. "themes/zenburn/theme.lua")
+
+-- init revelation
+revelation.init()
 
 -- This is used later as the default terminal and editor to run.
 terminal = "termite"
@@ -382,6 +387,8 @@ globalkeys = awful.util.table.join(
     awful.key({ modkey,           }, "Escape", awful.tag.history.restore,
               {description = "go back", group = "tag"}),
 
+    awful.key({ modkey,           }, "e",      revelation,
+              {description = "expose view of all clients", groups = "client"}),
     awful.key({ modkey,           }, "j",
         function ()
             awful.client.focus.byidx( 1)
