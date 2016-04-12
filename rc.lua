@@ -100,22 +100,19 @@ end
 
 -- {{{ Wallpaper
 if beautiful.wallpaper then
-    for s in screen do
+    awful.screen.connect_for_each_screen(function(s)
         gears.wallpaper.maximized(beautiful.wallpaper, s, true)
-    end
+    end)
 end
 -- }}}
 
 -- {{{ Tags
 -- Define a tag table which hold all screen tags.
-tags = {
-	names = { "web", "term", "docs", "media", "files", "other" },
-	layout = { layouts[1], layouts[3], layouts[4], layouts[1], layouts[7], layouts[1] }
-}
-for s = 1, screen.count() do
+tags = {}
+awful.screen.connect_for_each_screen(function(s)
     -- Each screen has its own tag table.
-    tags[s] = awful.tag(tags.names, s, tags.layout)
-end
+    tags[s] = awful.tag({ 1, 2, 3, 4, 5, 6, 7, 8, 9 }, s, awful.layout.layouts[1])
+end)
 -- }}}
 
 -- {{{ Menu
@@ -168,20 +165,59 @@ lain.widgets.calendar:attach(mytextclock, {
 	font = "Monospace", font_size = 10
 })
 
--- Volume
-volicon = wibox.widget.imagebox(beautiful.widget_vol)
-volumewidget = lain.widgets.pulseaudio({
-    settings = function()
-        if volume_now.muted == "yes" then
-            widget:set_markup(markup("#ff0000", volume_now.left .. "% "))
-        else
-            widget:set_markup(markup("#7493d2", volume_now.left .. "% "))
+-- {{{ Volume Controller
+function volumectl (mode, widget)
+    if mode == "update" then
+        local f = io.popen("pamixer --get-volume")
+        local volume = f:read("*all")
+        f:close()
+        if not tonumber(volume) then
+            widget:set_markup("<span color='red'>ERR</span>")
+            do return end
         end
-    end,
-	scallback = function()
-		return "pacmd list-sinks | sed -n -e '0,/*/d' -e '/base volume/d' -e '/volume:/p' -e '/muted:/p'"
-	end
-})
+        volume = string.format("% 3d", volume)
+
+        f = io.popen("pamixer --get-mute")
+        local muted = f:read("*all")
+        f:close()
+        if muted:gsub('%s+', '') == "false" then
+            volume = '♫' .. volume .. "%"
+        else
+            volume = '♫' .. volume .. "<span color='red'>M</span>"
+        end
+        widget:set_markup(volume)
+    elseif mode == "up" then
+        local f = io.popen("pamixer --allow-boost --increase 5")
+        f:read("*all")
+        f:close()
+        volumectl("update", widget)
+    elseif mode == "down" then
+        local f = io.popen("pamixer --allow-boost --decrease 5")
+        f:read("*all")
+        f:close()
+        volumectl("update", widget)
+    else
+        local f = io.popen("pamixer --toggle-mute")
+        f:read("*all")
+        f:close()
+        volumectl("update", widget)
+    end
+end
+volume_clock = timer({ timeout = 10 })
+volume_clock:connect_signal("timeout", function () volumectl("update", volumewidget) end)
+volume_clock:start()
+
+volumewidget = wibox.widget.textbox()
+volumewidget.width = 48
+volumewidget:set_align('right')
+volumewidget:buttons(awful.util.table.join(
+    awful.button({ }, 4, function () volumectl("up", volumewidget) end),
+    awful.button({ }, 5, function () volumectl("down", volumewidget) end),
+    awful.button({ }, 3, function () awful.util.spawn("pavucontrol") end),
+    awful.button({ }, 1, function () volumectl("mute", volumewidget) end)
+))
+volumectl("update", volumewidget)
+--}}}
 
 -- Net
 netdownicon = wibox.widget.imagebox(beautiful.widget_netdown)
@@ -236,12 +272,20 @@ mypromptbox = {}
 mylayoutbox = {}
 mytaglist = {}
 mytaglist.buttons = awful.util.table.join(
-                    awful.button({ }, 1, awful.tag.viewonly),
-                    awful.button({ modkey }, 1, awful.client.movetotag),
+                    awful.button({ }, 1, function(t) t:view_only() end),
+                    awful.button({ modkey }, 1, function(t)
+                                              if client.focus then
+                                                  client.focus:move_to_tag(t)
+                                              end
+                                          end),
                     awful.button({ }, 3, awful.tag.viewtoggle),
-                    awful.button({ modkey }, 3, awful.client.toggletag),
-                    awful.button({ }, 4, function(t) awful.tag.viewnext(awful.tag.getscreen(t)) end),
-                    awful.button({ }, 5, function(t) awful.tag.viewprev(awful.tag.getscreen(t)) end)
+                    awful.button({ modkey }, 3, function(t)
+                                              if client.focus then
+                                                  client.focus:toggle_tag(t)
+                                              end
+                                          end),
+                    awful.button({ }, 4, function(t) awful.tag.viewnext(t.screen) end),
+                    awful.button({ }, 5, function(t) awful.tag.viewprev(t.screen) end)
                 )
 
 mytasklist = {}
@@ -253,8 +297,8 @@ mytasklist.buttons = awful.util.table.join(
                                                   -- Without this, the following
                                                   -- :isvisible() makes no sense
                                                   c.minimized = false
-                                                  if not c:isvisible() then
-                                                      awful.tag.viewonly(c.first_tag)
+                                                  if not c:isvisible() and c.first_tag then
+                                                      c.first_tag:view_only()
                                                   end
                                                   -- This will also un-minimize
                                                   -- the client, if needed
@@ -270,7 +314,7 @@ mytasklist.buttons = awful.util.table.join(
                                               awful.client.focus.byidx(-1)
                                           end))
 
-for s in screen do
+awful.screen.connect_for_each_screen(function(s)
     -- Create a promptbox for each screen
     mypromptbox[s] = awful.widget.prompt()
     -- Create an imagebox widget which will contains an icon indicating which layout we're using.
@@ -308,16 +352,15 @@ for s in screen do
             netdowninfo,
             netupicon,
             netupinfo,
-            volicon,
             volumewidget,
             baticon,
             batwidget,
             mytextclock,
-			github_widget,
+            github_widget,
             mylayoutbox[s],
         },
     }
-end
+end)
 -- }}}
 
 -- {{{ Mouse bindings
@@ -426,26 +469,10 @@ globalkeys = awful.util.table.join(
     awful.key({ modkey }, "p", function() menubar.show() end,
               {description = "show the menubar", group = "launcher"}),
 
-	-- PulseAudio volume control
-    awful.key({ altkey }, "Up",
-              function ()
-                  os.execute(string.format("pactl set-sink-volume %d +5%%", volumewidget.sink))
-                  volumewidget.update()
-              end),
-    awful.key({ altkey }, "Down",
-              function ()
-                  os.execute(string.format("pactl set-sink-volume %d -5%%", volumewidget.sink))
-                  volumewidget.update()
-              end),
-    awful.key({ altkey }, "m",
-              function ()
-                  if volumewidget.muted == "yes" then
-                      os.execute(string.format("pactl set-sink-mute %d off", volumewidget.sink))
-                  else
-                      os.execute(string.format("pactl set-sink-mute %d on", volumewidget.sink))
-                  end
-                  volumewidget.update()
-              end)
+    -- Volume
+    awful.key({ }, 'XF86AudioRaiseVolume', function () volumectl("up", volumewidget) end),
+    awful.key({ }, 'XF86AudioLowerVolume', function () volumectl("down", volumewidget) end),
+    awful.key({ }, 'XF86AudioMute', function () volumectl("mute", volumewidget) end)
 )
 
 clientkeys = awful.util.table.join(
@@ -460,7 +487,7 @@ clientkeys = awful.util.table.join(
               {description = "toggle floating", group = "client"}),
     awful.key({ modkey, "Control" }, "Return", function (c) c:swap(awful.client.getmaster()) end,
               {description = "move to master", group = "client"}),
-    awful.key({ modkey,           }, "o",      awful.client.movetoscreen                        ,
+    awful.key({ modkey,           }, "o",      function (c) c:move_to_screen()               end,
               {description = "move to screen", group = "client"}),
     awful.key({ modkey,           }, "t",      function (c) c.ontop = not c.ontop            end,
               {description = "toggle keep on top", group = "client"}),
@@ -488,9 +515,9 @@ for i = 1, 9 do
         awful.key({ modkey }, "#" .. i + 9,
                   function ()
                         local screen = awful.screen.focused()
-                        local tag = awful.tag.gettags(screen)[i]
+                        local tag = screen.tags[i]
                         if tag then
-                           awful.tag.viewonly(tag)
+                           tag:view_only()
                         end
                   end,
                   {description = "view tag #"..i, group = "tag"}),
@@ -498,7 +525,7 @@ for i = 1, 9 do
         awful.key({ modkey, "Control" }, "#" .. i + 9,
                   function ()
                       local screen = awful.screen.focused()
-                      local tag = awful.tag.gettags(screen)[i]
+                      local tag = screen.tags[i]
                       if tag then
                          awful.tag.viewtoggle(tag)
                       end
@@ -508,20 +535,20 @@ for i = 1, 9 do
         awful.key({ modkey, "Shift" }, "#" .. i + 9,
                   function ()
                       if client.focus then
-                          local tag = awful.tag.gettags(client.focus.screen)[i]
+                          local tag = client.focus.screen.tags[i]
                           if tag then
-                              awful.client.movetotag(tag)
+                              client.focus:move_to_tag(tag)
                           end
                      end
                   end,
                   {description = "move focused client to tag #"..i, group = "tag"}),
-        -- Toggle tag.
+        -- Toggle tag on focused client.
         awful.key({ modkey, "Control", "Shift" }, "#" .. i + 9,
                   function ()
                       if client.focus then
-                          local tag = awful.tag.gettags(client.focus.screen)[i]
+                          local tag = client.focus.screen.tags[i]
                           if tag then
-                              awful.client.toggletag(tag)
+                              client.focus:toggle_tag(tag)
                           end
                       end
                   end,
@@ -554,8 +581,8 @@ awful.rules.rules = {
                      keys = clientkeys,
                      buttons = clientbuttons } },
 
-    { rule = { class = "mpv" },
-      properties = { fullscreen = true, tag = tags[1][4] } },
+    --{ rule = { class = "mpv" },
+    --  properties = { fullscreen = true, tag = tags[1][4] } },
     { rule = { class = "pinentry" },
       properties = { floating = true } },
     { rule = { class = "hexchat" },
@@ -667,11 +694,12 @@ client.connect_signal("unfocus", function(c) c.border_color = beautiful.border_n
 -- }}}
 
 -- {{{ run_once
-run_once.run_once("xrandr --output HDMI1 --auto --right-of eDP1")
+run_once.run_once("xrandr --output HDMI-1 --auto --output eDP-1 --off")
 run_once.run_once("/usr/bin/feh --bg-tile /home/proudzhu/Pictures/wallhaven-201629.jpg")
 run_once.run_once("fcitx")
 run_once.run_once("dropbox")
 --run_once.run_once("compton --backend glx -b")
 run_once.run_once("udiskie")
 run_once.run_once("redshift")
+run_once.run_once("blueman-applet")
 -- }}}
