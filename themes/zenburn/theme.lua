@@ -13,7 +13,7 @@ theme.wallpaper = theme.confdir .. "/zenburn-background.png"
 -- }}}
 
 -- {{{ Styles
-theme.font      = "Monospace 10"
+theme.font      = "Sans 10"
 
 -- {{{ Colors
 theme.fg_normal  = "#DCDCCC"
