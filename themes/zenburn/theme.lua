@@ -130,6 +130,9 @@ theme.taglist_squares_unsel         = theme.confdir .. "/icons/square_b.png"
 theme.titlebar_close_button_focus  = theme.confdir .. "/titlebar/close_focus.png"
 theme.titlebar_close_button_normal = theme.confdir .. "/titlebar/close_normal.png"
 
+theme.titlebar_minimize_button_normal = "/usr/share/awesome/themes/default/titlebar/minimize_normal.png"
+theme.titlebar_minimize_button_focus  = "/usr/share/awesome/themes/default/titlebar/minimize_focus.png"
+
 theme.titlebar_ontop_button_focus_active  = theme.confdir .. "/titlebar/ontop_focus_active.png"
 theme.titlebar_ontop_button_normal_active = theme.confdir .. "/titlebar/ontop_normal_active.png"
 theme.titlebar_ontop_button_focus_inactive  = theme.confdir .. "/titlebar/ontop_focus_inactive.png"
