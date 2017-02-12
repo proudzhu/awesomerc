@@ -10,6 +10,8 @@ local beautiful = require("beautiful")
 local naughty = require("naughty")
 local menubar = require("menubar")
 local hotkeys_popup = require("awful.hotkeys_popup").widget
+-- Enable VIM help for hotkeys widget when client with matching name is opened:
+require("awful.hotkeys_popup.keys.vim")
 -- load the 'run or raise' function
 local ror = require("aweror")
 -- load run_once' function
@@ -130,9 +132,9 @@ markup = lain.util.markup
 
 -- Create a textclock widget
 -- mytextclock = awful.widget.textclock()
-clockicon = wibox.widget.imagebox(beautiful.widget_clock)
+clockicon = wibox.widget.imagebox(theme.widget_clock)
 -- mytextclock = awful.widget.textclock(markup("#7788af", "%A %d %B ") .. markup("#343639", ">") .. markup("#de5e1e", " %H:%M "))
-mytextclock = lain.widgets.abase({
+mytextclock = lain.widget.watch({
 	timeout  = 60,
 	cmd      = "date +'%A %d %B %R'",
 	settings = function()
@@ -146,8 +148,13 @@ mytextclock = lain.widgets.abase({
 })
 
 -- Calendar
-lain.widgets.calendar.attach(mytextclock, {
-	font = "Monospace", font_size = 10
+lain.widget.calendar({
+    attach_to = { mytextclock.widget },
+    notification_preset = {
+        font = "Monospace 10",
+        fg   = theme.fg_normal,
+        bg   = theme.bg_normal
+    }
 })
 
 -- {{{ Volume Controller
@@ -210,7 +217,7 @@ netdownicon = wibox.widget.imagebox(beautiful.widget_netdown)
 netdowninfo = wibox.widget.textbox()
 netupicon = wibox.widget.imagebox(beautiful.widget_netup)
 -- netupicon.align = "middle"
-netupinfo = lain.widgets.net({
+netupinfo = lain.widget.net({
 	settings = function()
 		--[[
 		if iface ~= "network off" and
@@ -227,7 +234,7 @@ netupinfo = lain.widgets.net({
 
 -- Battery
 baticon = wibox.widget.imagebox(beautiful.widget_batt)
-batwidget = lain.widgets.bat({
+batwidget = lain.widget.bat({
     settings = function()
         if bat_now.perc == "N/A" then
             perc = "AC "
@@ -513,7 +520,7 @@ clientkeys = awful.util.table.join(
 )
 
 -- Bind all key numbers to tags.
--- Be careful: we use keycodes to make it works on any keyboard layout.
+-- Be careful: we use keycodes to make it work on any keyboard layout.
 -- This should map on the top row of your keyboard, usually 1 to 9.
 for i = 1, 9 do
     globalkeys = awful.util.table.join(globalkeys,
