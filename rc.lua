@@ -570,7 +570,9 @@ for i = 1, 9 do
 end
 
 clientbuttons = awful.util.table.join(
-    awful.button({ }, 1, function (c) client.focus = c; c:raise() end),
+    -- this is commented out due to this bug,
+	-- https://github.com/awesomeWM/awesome/issues/1479
+    -- awful.button({ }, 1, function (c) client.focus = c; c:raise() end),
     awful.button({ modkey }, 1, awful.mouse.client.move),
     awful.button({ modkey }, 3, awful.mouse.client.resize))
 
@@ -712,8 +714,8 @@ client.connect_signal("unfocus", function(c) c.border_color = beautiful.border_n
 -- }}}
 
 -- {{{ run_once
-run_once.run_once("xrandr --output HDMI-1 --auto --output eDP-1 --off")
-run_once.run_once("/usr/bin/feh --bg-tile /home/proudzhu/Pictures/wallhaven-201629.jpg")
+run_once.run_once("xrandr --output eDP-1 --left-of HDMI-1 --auto")
+run_once.run_once("/usr/bin/feh --bg-tile /home/proudzhu/Pictures/wallhaven-473230.jpg")
 run_once.run_once("fcitx")
 run_once.run_once("dropbox")
 run_once.run_once("nutstore")
