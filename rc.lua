@@ -134,18 +134,17 @@ markup = lain.util.markup
 -- mytextclock = awful.widget.textclock()
 clockicon = wibox.widget.imagebox(theme.widget_clock)
 -- mytextclock = awful.widget.textclock(markup("#7788af", "%A %d %B ") .. markup("#343639", ">") .. markup("#de5e1e", " %H:%M "))
-mytextclock = lain.widget.watch({
-	timeout  = 60,
-	cmd      = "date +'%A %d %B %R'",
-	settings = function()
+mytextclock = awful.widget.watch(
+	"date +'%A %d %B %R'", 60,
+	function(widget, stdout)
 		local t_output = ""
-		local o_it = string.gmatch(output, "%S+")
+		local o_it = string.gmatch(stdout, "%S+")
 
 		for i=1,3 do t_output = t_output .. " " .. o_it(i) end
 
 		widget:set_markup(markup("#7788af", t_output) .. markup("#343639", " > ") .. markup("#de5e1e", o_it(1)) .. " ")
 	end
-})
+)
 
 -- Calendar
 lain.widget.calendar({
@@ -195,7 +194,7 @@ function volumectl (mode, widget)
         volumectl("update", widget)
     end
 end
-volume_clock = timer({ timeout = 10 })
+volume_clock = gears.timer({ timeout = 10 })
 volume_clock:connect_signal("timeout", function () volumectl("update", volumewidget) end)
 volume_clock:start()
 
@@ -725,7 +724,6 @@ client.connect_signal("unfocus", function(c) c.border_color = beautiful.border_n
 
 -- {{{ run_once
 run_once.run_once("xrandr --output eDP-1 --left-of HDMI-1 --auto")
-run_once.run_once("/usr/bin/feh --bg-tile /home/proudzhu/Pictures/wallhaven-473230.jpg")
 run_once.run_once("fcitx")
 run_once.run_once("dropbox")
 run_once.run_once("nutstore")
@@ -733,4 +731,5 @@ run_once.run_once("nutstore")
 run_once.run_once("udiskie")
 run_once.run_once("redshift")
 run_once.run_once("blueman-applet")
+run_once.run_once("/usr/bin/feh --bg-tile /home/proudzhu/Pictures/wallhaven-473230.jpg")
 -- }}}
