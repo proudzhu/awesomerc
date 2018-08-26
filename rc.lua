@@ -496,7 +496,10 @@ globalkeys = gears.table.join(
     -- Volume
     awful.key({ }, 'XF86AudioRaiseVolume', function () volumectl("up", volumewidget) end),
     awful.key({ }, 'XF86AudioLowerVolume', function () volumectl("down", volumewidget) end),
-    awful.key({ }, 'XF86AudioMute', function () volumectl("mute", volumewidget) end)
+    awful.key({ }, 'XF86AudioMute', function () volumectl("mute", volumewidget) end),
+
+    -- light locker
+    awful.key({ modkey }, "l", function() awful.util.spawn("light-locker-command -l") end)
 )
 
 clientkeys = gears.table.join(
@@ -731,6 +734,7 @@ client.connect_signal("unfocus", function(c) c.border_color = beautiful.border_n
 -- }}}
 
 -- {{{ run_once
+run_once.run_once("light-locker")
 run_once.run_once("xrandr --output eDP-1 --right-of HDMI-1 --auto")
 run_once.run_once("fcitx")
 --run_once.run_once("dropbox")
