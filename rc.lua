@@ -153,8 +153,9 @@ mytextclock = awful.widget.watch(
 )
 
 -- Calendar
-lain.widget.calendar({
-    attach_to = { mytextclock.widget },
+local mycal = lain.widget.cal({
+    attach_to = { mytextclock },
+    followtag = true,
     notification_preset = {
         font = "Monospace 10",
         fg   = theme.fg_normal,
@@ -496,7 +497,10 @@ globalkeys = gears.table.join(
     awful.key({ }, 'XF86AudioMute', function () volumectl("mute", volumewidget) end),
 
     -- light locker
-    awful.key({ modkey }, "l", function() awful.util.spawn("light-locker-command -l") end)
+    awful.key({ modkey }, "l", function() awful.util.spawn("light-locker-command -l") end),
+
+    -- Calendar
+    awful.key({ altkey }, "c", function () mycal.show(3) end)
 )
 
 clientkeys = gears.table.join(
