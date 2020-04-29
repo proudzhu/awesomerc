@@ -131,15 +131,8 @@ mytextclock = awful.widget.watch(
 )
 
 -- Calendar
-local mycal = lain.widget.cal({
-    attach_to = { mytextclock },
-    followtag = true,
-    notification_preset = {
-        font = "Monospace 10",
-        fg   = theme.fg_normal,
-        bg   = theme.bg_normal
-    }
-})
+local mycal = awful.widget.calendar_popup.month()
+mycal:attach(mytextclock, "tr")
 
 -- {{{ Volume Controller
 function volumectl (mode, widget)
@@ -429,7 +422,7 @@ awful.keyboard.append_global_keybindings({
     awful.key({ modkey }, "l", function() awful.util.spawn("light-locker-command -l") end),
 
     -- Calendar
-    awful.key({ altkey }, "c", function () mycal.show(3) end),
+    awful.key({ altkey }, "c", function () mycal:toggle() end),
 })
 
 -- Tags related keybindings
